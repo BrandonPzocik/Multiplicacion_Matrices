@@ -76,7 +76,7 @@
             }
 
             // Enviar las matrices al servidor para la multiplicación
-            let respuesta = await fetch("/multiplicar", {
+            let respuesta = await fetch("http://127.0.0.1:5000/multiplicar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ matriz1, matriz2 })
