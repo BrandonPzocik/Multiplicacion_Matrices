@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplicación de Matrices</title>
+    <script>
+        // Función para generar las matrices dinámicamente en la interfaz
+        function generarMatrices() {
+            let filas1 = parseInt(document.getElementById("filas1").value) || 0;
+            let columnas1 = parseInt(document.getElementById("columnas1").value) || 0;
+            let filas2 = parseInt(document.getElementById("filas2").value) || 0;
+            let columnas2 = parseInt(document.getElementById("columnas2").value) || 0;
+
+            // Validación de dimensiones
+            if (columnas1 !== filas2) {
+                alert("Las matrices no se pueden multiplicar, las columnas de la primera deben coincidir con las filas de la segunda.");
+                return;
+            }
+
+            let contenedor = document.getElementById("matrices");
+            contenedor.innerHTML = "";
+
+            // Generar las matrices
+            for (let k = 1; k <= 2; k++) {
+                let filas = (k === 1) ? filas1 : filas2;
+                let columnas = (k === 1) ? columnas1 : columnas2;
+
+                let tabla = document.createElement("table");
+                tabla.innerHTML = `<caption>Matriz ${k}</caption>`;
+                for (let i = 0; i < filas; i++) {
+                    let fila = document.createElement("tr");
+                    for (let j = 0; j < columnas; j++) {
+                        let celda = document.createElement("td");
+                        let input = document.createElement("input");
+                        input.type = "number";
+                        input.id = `m${k}_${i}_${j}`;
+                        celda.appendChild(input);
+                        fila.appendChild(celda);
+                    }
+                    tabla.appendChild(fila);
+                }
+                contenedor.appendChild(tabla);
+            }
+        }
+
+        // Función para multiplicar las matrices
+        async function multiplicarMatrices() {
+            let filas1 = parseInt(document.getElementById("filas1").value) || 0;
+            let columnas1 = parseInt(document.getElementById("columnas1").value) || 0;
+            let filas2 = parseInt(document.getElementById("filas2").value) || 0;
+            let columnas2 = parseInt(document.getElementById("columnas2").value) || 0;
+
+            if (columnas1 !== filas2) {
+                alert("Las matrices no se pueden multiplicar, las columnas de la primera deben coincidir con las filas de la segunda.");
+                return;
+            }
+
+            let matriz1 = [], matriz2 = [];
+            
+            // Cargar las matrices desde los inputs
+            for (let i = 0; i < filas1; i++) {
+                let fila1 = [];
+                for (let j = 0; j < columnas1; j++) {
+                    fila1.push(Number(document.getElementById(`m1_${i}_${j}`).value) || 0);
+                }
+                matriz1.push(fila1);
+            }
+            
+            for (let i = 0; i < filas2; i++) {
+                let fila2 = [];
+                for (let j = 0; j < columnas2; j++) {
+                    fila2.push(Number(document.getElementById(`m2_${i}_${j}`).value) || 0);
+                }
+                matriz2.push(fila2);
+            }
+
+            // Enviar las matrices al servidor para la multiplicación
+            let respuesta = await fetch("/multiplicar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ matriz1, matriz2 })
+            });
+            let datos = await respuesta.json();
+            mostrarResultado(datos.resultado);
+        }
+
+        // Función para mostrar el resultado de la multiplicación en la interfaz
+        function mostrarResultado(resultado) {
+            let contenedor = document.getElementById("resultado");
+            contenedor.innerHTML = "<h3>Resultado</h3>";
+            let tabla = document.createElement("table");
+            resultado.forEach(fila => {
+                let filaHTML = document.createElement("tr");
+                fila.forEach(valor => {
+                    let celda = document.createElement("td");
+                    celda.textContent = valor;
+                    filaHTML.appendChild(celda);
+                });
+                tabla.appendChild(filaHTML);
+            });
+            contenedor.appendChild(tabla);
+        }
+    </script>
+</head>
+<body>
+    <h1>Multiplicación de Matrices</h1>
+    <label>Filas Matriz 1: <input type="number" id="filas1" min="1"></label>
+    <label>Columnas Matriz 1: <input type="number" id="columnas1" min="1"></label>
+    <label>Filas Matriz 2: <input type="number" id="filas2" min="1"></label>
+    <label>Columnas Matriz 2: <input type="number" id="columnas2" min="1"></label>
+    <button onclick="generarMatrices()">Generar Matrices</button>
+    <div id="matrices"></div>
+    <button onclick="multiplicarMatrices()">Multiplicar</button>
+    <div id="resultado"></div>
+</body>
+</html>
